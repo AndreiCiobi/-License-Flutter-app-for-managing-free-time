@@ -1,71 +1,99 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:license_project/helpers/components/containers/auth_background_container.dart';
+import 'package:license_project/helpers/loading/loading_screen.dart';
+import 'package:license_project/services/auth/bloc/auth_bloc.dart';
+import 'package:license_project/services/auth/bloc/auth_event.dart';
+import 'package:license_project/services/auth/bloc/auth_state.dart';
+import 'package:license_project/services/auth/firebase_auth_provider.dart';
+import 'package:license_project/views/activities_view.dart';
+import 'package:license_project/views/forgot_password_view.dart';
+import 'package:license_project/views/login_view.dart';
+import 'package:license_project/views/register_view.dart';
+import 'package:license_project/views/verify_email.dart';
+import 'package:license_project/views/welcome_view.dart';
 
 void main() {
-  runApp(const MyApp());
-}
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
+  runApp(
+    MaterialApp(
+      title: 'Your City',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        // primaryColor: const Color.fromARGB(255, 194, 23, 80),
+        // scaffoldBackgroundColor: const Color.fromARGB(255, 213, 208, 192),
+        // scaffoldBackgroundColor: Colors.deepPurple,
+        textSelectionTheme: TextSelectionThemeData(
+          selectionHandleColor: Colors.greenAccent,
+          cursorColor: Colors.grey,
+          selectionColor: Colors.amber,
+        ),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+
+      debugShowCheckedModeBanner: false,
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => AuthBloc(FirebaseAuthProvider()),
+          ),
+        ],
+        child: const HomePage(),
+      ),
+      // home: const WelcomeView(),
+    ),
+  );
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+    context.read<AuthBloc>().add(const AuthEventInitialize());
+
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state.isLoading) {
+          LoadingScreen().show(
+            context: context,
+            text: state.loadingText ?? 'Please wait a moment..',
+          );
+        } else {
+          LoadingScreen().hide();
+        }
+      },
+      builder: (context, state) {
+        if (state is AuthStateLoggedOut) {
+          return const WelcomeView();
+        } else if (state is AuthStateRegistering) {
+          return const RegisterView();
+        } else if (state is AuthStateLoggingIn) {
+          return const LoginView();
+        } else if (state is AuthStateNeedsVerification) {
+          return const VerifyEmailView();
+        } else if (state is AuthStateForgotPassword) {
+          return const ForgotPasswordView();
+        } else if (state is AuthStateLoggedIn) {
+          return const ActivitiesView();
+        } else {
+          return const Scaffold(
+            body: Stack(
+              children: [
+                BackgroundContainer(),
+                Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.black,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+          );
+        }
+      },
     );
+
+    // return const ForgotPasswordView();
   }
 }
