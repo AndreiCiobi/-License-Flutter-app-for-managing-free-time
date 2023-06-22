@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:license_project/services/auth/bloc/auth_bloc.dart';
 import 'package:license_project/services/auth/bloc/auth_event.dart';
-import 'package:license_project/utilities/generics/device_size.dart';
+import 'package:license_project/utilities/generics/extensions.dart';
 
 class AuthGoogleButton extends StatelessWidget {
   const AuthGoogleButton({super.key});

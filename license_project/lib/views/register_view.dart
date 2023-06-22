@@ -9,7 +9,7 @@ import 'package:license_project/services/auth/bloc/auth_event.dart';
 import 'package:license_project/services/auth/bloc/auth_state.dart';
 import 'package:license_project/utilities/auth/register_validator.dart';
 import 'package:license_project/utilities/dialogs/error_dialog.dart';
-import 'package:license_project/utilities/generics/device_size.dart';
+import 'package:license_project/utilities/generics/extensions.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});

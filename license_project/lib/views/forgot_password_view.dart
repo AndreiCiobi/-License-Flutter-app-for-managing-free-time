@@ -7,7 +7,7 @@ import 'package:license_project/services/auth/bloc/auth_event.dart';
 import 'package:license_project/services/auth/bloc/auth_state.dart';
 import 'package:license_project/utilities/dialogs/error_dialog.dart';
 import 'package:license_project/utilities/dialogs/password_reset_dialog.dart';
-import 'package:license_project/utilities/generics/device_size.dart';
+import 'package:license_project/utilities/generics/extensions.dart';
 
 class ForgotPasswordView extends StatefulWidget {
   const ForgotPasswordView({super.key});

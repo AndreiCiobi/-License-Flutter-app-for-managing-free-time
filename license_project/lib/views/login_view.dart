@@ -8,8 +8,7 @@ import 'package:license_project/services/auth/bloc/auth_bloc.dart';
 import 'package:license_project/services/auth/bloc/auth_event.dart';
 import 'package:license_project/services/auth/bloc/auth_state.dart';
 import 'package:license_project/utilities/dialogs/error_dialog.dart';
-import 'package:license_project/utilities/generics/device_size.dart';
-import 'dart:developer' as dev;
+import 'package:license_project/utilities/generics/extensions.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});

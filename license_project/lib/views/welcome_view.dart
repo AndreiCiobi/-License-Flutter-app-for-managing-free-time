@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:license_project/helpers/components/containers/auth_background_container.dart';
 import 'package:license_project/services/auth/bloc/auth_bloc.dart';
 import 'package:license_project/services/auth/bloc/auth_event.dart';
-import 'package:license_project/utilities/generics/device_size.dart';
+import 'package:license_project/utilities/generics/extensions.dart';
 
 class WelcomeView extends StatefulWidget {
   const WelcomeView({super.key});
@@ -106,7 +106,7 @@ class LogoContainer extends StatelessWidget {
       decoration: BoxDecoration(
         image: const DecorationImage(
           image: AssetImage('assets/images/bucharest.png'),
-          fit: BoxFit.fill,
+          fit: BoxFit.contain,
         ),
         border: Border.all(color: Colors.grey),
         borderRadius: BorderRadius.circular(10),

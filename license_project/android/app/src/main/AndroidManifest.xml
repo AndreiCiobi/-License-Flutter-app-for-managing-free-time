@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <application
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<application
         android:label="license_project"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
@@ -29,5 +30,7 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+    	<meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyAMhxfJ0vX__Y8sAchtkWnX_aG2Q02--lg"/>
     </application>
 </manifest>

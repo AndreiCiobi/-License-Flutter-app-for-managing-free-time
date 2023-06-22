@@ -7,7 +7,7 @@ import 'package:license_project/helpers/components/containers/auth_background_co
 import 'package:license_project/services/auth/auth_service.dart';
 import 'package:license_project/services/auth/bloc/auth_bloc.dart';
 import 'package:license_project/services/auth/bloc/auth_event.dart';
-import 'package:license_project/utilities/generics/device_size.dart';
+import 'package:license_project/utilities/generics/extensions.dart';
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
