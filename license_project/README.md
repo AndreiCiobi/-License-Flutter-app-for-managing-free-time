@@ -1,16 +1,10 @@
-# license_project
+# Your Bucharest 
 
-A new Flutter project.
+A Flutter application for guiding people in choosing their desired activity for free time leisure.
 
-## Getting Started
+This project aims to reduce the decision-making time for planning recreational activities in the municipality of Bucharest, 
+by providing a quick and attractive selection of the most suitable ways to spend free time. 
 
-This project is a starting point for a Flutter application.
+With a wide range of categories available, Your Bucharest showcases points of interest or current events where people can engage in their preferred activities.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![Start Menu](../images/main_menu.jpg)
