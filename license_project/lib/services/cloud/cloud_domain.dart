@@ -8,14 +8,12 @@ class CloudDomain {
   final String id;
   final String label;
   final String imageUrl;
-  final String domainPath;
   final bool hasEvents;
 
   const CloudDomain({
     required this.id,
     required this.label,
     required this.imageUrl,
-    required this.domainPath,
     required this.hasEvents,
   });
 
@@ -23,6 +21,5 @@ class CloudDomain {
       : id = snapshot.id,
         label = snapshot.data()[domainLabel],
         imageUrl = decode(snapshot.data()[domainImageUrl]),
-        domainPath = snapshot.data()[path],
         hasEvents = snapshot.data()[domainHasEvents] ?? false;
 }

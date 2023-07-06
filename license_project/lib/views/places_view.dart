@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -150,13 +151,21 @@ class _PlacesViewState extends State<PlacesView> {
                                                   },
                                                 ),
                                         ),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            image: DecorationImage(
-                                              image:
-                                                  NetworkImage(place.imageUrl),
-                                              fit: BoxFit.cover,
+                                        child: CachedNetworkImage(
+                                          imageUrl: place.imageUrl,
+                                          imageBuilder:
+                                              (context, imageProvider) =>
+                                                  Container(
+                                            decoration: BoxDecoration(
+                                              image: DecorationImage(
+                                                image: imageProvider,
+                                                fit: BoxFit.cover,
+                                              ),
                                             ),
+                                          ),
+                                          placeholder: (context, url) =>
+                                              const Center(
+                                            child: CircularProgressIndicator(),
                                           ),
                                         ),
                                       ),

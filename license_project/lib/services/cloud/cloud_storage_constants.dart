@@ -31,3 +31,5 @@ const placeId = 'placeId';
 const activityImageUrl = 'imageUrl';
 const activityTitle = 'title';
 const activityTimestamp = 'timestamp';
+const placeHasActivities = 'hasActivities';
+const placeHasCalendar = 'hasCalendar';

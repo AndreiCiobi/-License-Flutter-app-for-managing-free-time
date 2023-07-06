@@ -16,6 +16,8 @@ class CloudPlace implements CloudPointOfInterest {
   final String? address;
   final String? description;
   final List<String>? contacts;
+  final bool? hasActivities;
+  final bool? hasCalendar;
 
   const CloudPlace({
     required this.id,
@@ -28,6 +30,8 @@ class CloudPlace implements CloudPointOfInterest {
     required this.address,
     required this.description,
     required this.contacts,
+    required this.hasActivities,
+    required this.hasCalendar,
   });
 
   CloudPlace.fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> snapshot)
@@ -40,5 +44,7 @@ class CloudPlace implements CloudPointOfInterest {
         schedule = snapshot.data()[placeSchedule] ?? {},
         address = snapshot.data()[placeAddress] ?? '',
         description = snapshot.data()[placeDescription],
-        contacts = List<String>.from(snapshot.data()[placeContacts] ?? []);
+        contacts = List<String>.from(snapshot.data()[placeContacts] ?? []),
+        hasActivities = snapshot.data()[placeHasActivities] ?? true,
+        hasCalendar = snapshot.data()[placeHasCalendar] ?? false;
 }

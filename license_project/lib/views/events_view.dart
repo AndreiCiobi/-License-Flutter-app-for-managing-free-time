@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,7 +31,6 @@ class _EventsViewState extends State<EventsView> {
   late CloudDomain _cloudDomain;
   late final FirebaseCloudStorage _cloudService;
   var _currentDay = DateTime.now().day;
-  var _selectedDayIndex = 0;
 
   @override
   void initState() {
@@ -74,6 +74,12 @@ class _EventsViewState extends State<EventsView> {
                             if (snapshot.hasData) {
                               final events =
                                   snapshot.data as Iterable<CloudEvent>;
+
+                              if (events.any((element) => element.timestamp
+                                      .isAfter(DateTime.now())) ==
+                                  false) {
+                                return const MissingEventDialog();
+                              }
 
                               if (events.isEmpty) {
                                 return const MissingEventDialog();
@@ -201,13 +207,22 @@ class _EventsViewState extends State<EventsView> {
                                                       },
                                                     ),
                                             ),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                image: DecorationImage(
-                                                  image: NetworkImage(
-                                                      event.imageUrl),
-                                                  fit: BoxFit.cover,
+                                            child: CachedNetworkImage(
+                                              imageUrl: event.imageUrl,
+                                              imageBuilder:
+                                                  (context, imageProvider) =>
+                                                      Container(
+                                                decoration: BoxDecoration(
+                                                  image: DecorationImage(
+                                                    image: imageProvider,
+                                                    fit: BoxFit.cover,
+                                                  ),
                                                 ),
+                                              ),
+                                              placeholder: (context, url) =>
+                                                  const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
                                               ),
                                             ),
                                           ),

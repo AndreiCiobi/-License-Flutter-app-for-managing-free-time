@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -5,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:license_project/helpers/components/listviews/weekly_list_view.dart';
 import 'package:license_project/services/cloud/cloud_activity.dart';
 import 'package:license_project/services/cloud/cloud_place.dart';
 import 'package:license_project/services/cloud/firebase_cloud_storage.dart';
 import 'package:license_project/utilities/generics/calendar.dart';
 import 'package:license_project/utilities/generics/extensions.dart';
 import 'package:sliver_tools/sliver_tools.dart';
+import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'dart:developer' as dev;
@@ -47,10 +50,18 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
     super.dispose();
   }
 
+  void modifyNumberOfTabs(int length) {
+    _tabController = TabController(length: length, vsync: this);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     _cloudPlace = context.getArgument<CloudPlace>()!;
+    if (_cloudPlace.hasActivities == false) {
+      modifyNumberOfTabs(3);
+    }
+
     final contactList = _cloudPlace.contacts!;
     final LatLng source = LatLng(_cloudPlace.latitude!, _cloudPlace.longitude!);
     final navigation =
@@ -71,15 +82,18 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   centerTitle: true,
-                  title: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      _cloudPlace.name,
-                      style: GoogleFonts.actor(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                  title: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _cloudPlace.name,
+                        style: GoogleFonts.actor(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                   background: Hero(
@@ -101,17 +115,18 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
                         labelColor: Colors.black,
                         unselectedLabelColor: Colors.grey,
                         controller: _tabController,
-                        tabs: const [
-                          Tab(
-                            icon: Icon(CupertinoIcons.square_list),
-                          ),
-                          Tab(
+                        tabs: [
+                          if (_cloudPlace.hasActivities == true)
+                            const Tab(
+                              icon: Icon(CupertinoIcons.square_list),
+                            ),
+                          const Tab(
                             icon: Icon(CupertinoIcons.map),
                           ),
-                          Tab(
+                          const Tab(
                             icon: Icon(Icons.schedule_outlined),
                           ),
-                          Tab(
+                          const Tab(
                             icon: Icon(CupertinoIcons.info),
                           ),
                         ],
@@ -127,64 +142,18 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
                           child: TabBarView(
                             controller: _tabController,
                             children: [
-                              StreamBuilder(
-                                stream: _cloudService.getActivities(
-                                    givenPlaceId: _cloudPlace.id),
-                                builder: (context, snapshot) {
-                                  switch (snapshot.connectionState) {
-                                    case ConnectionState.active:
-                                      if (snapshot.hasData) {
-                                        final activities = snapshot.data
-                                            as Iterable<CloudActivity>;
-                                        return ListView.builder(
-                                          itemCount: activities.length,
-                                          itemBuilder: (context, index) {
-                                            final activity =
-                                                activities.elementAt(index);
-
-                                            return Padding(
-                                              padding:
-                                                  const EdgeInsets.all(16.0),
-                                              child: Column(
-                                                children: [
-                                                  ListTile(
-                                                    leading: Container(
-                                                      width: 100,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(10),
-                                                        image: DecorationImage(
-                                                          image: NetworkImage(
-                                                              activity
-                                                                  .imageUrl),
-                                                          fit: BoxFit.cover,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    title: Text(
-                                                      activity.title,
-                                                      style: GoogleFonts.actor(
-                                                        fontSize: 20,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  const Divider(),
-                                                ],
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      } else {
-                                        return const Placeholder();
-                                      }
-                                    default:
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                  }
-                                },
-                              ),
+                              if (_cloudPlace.hasActivities == true)
+                                _cloudPlace.hasCalendar!
+                                    ? _CachedContent(
+                                        child: PlaceDynamicActivities(
+                                          cloudService: _cloudService,
+                                          cloudPlace: _cloudPlace,
+                                        ),
+                                      )
+                                    : PlaceStaticActivities(
+                                        cloudService: _cloudService,
+                                        cloudPlace: _cloudPlace,
+                                      ),
                               _CachedContent(
                                 child: Column(
                                   children: [
@@ -267,6 +236,7 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
                                               ),
                                             ),
                                             const SizedBox(
+                                              width: 10,
                                               child: Text(
                                                 ':',
                                                 style: TextStyle(
@@ -275,11 +245,13 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
                                               ),
                                             ),
                                             SizedBox(
+                                              width: 100,
                                               child: Text(
                                                 program,
                                                 style: const TextStyle(
                                                   fontSize: 16,
                                                 ),
+                                                textAlign: TextAlign.center,
                                               ),
                                             ),
                                           ],
@@ -293,80 +265,85 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
                               Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 20),
-                                    Visibility(
-                                      visible: _cloudPlace.description != null,
-                                      child: Center(
-                                        child: Text(
-                                          _cloudPlace.description ?? '',
-                                          style:
-                                              GoogleFonts.actor(fontSize: 20),
-                                          textAlign: TextAlign.center,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      const SizedBox(height: 20),
+                                      Visibility(
+                                        visible:
+                                            _cloudPlace.description != null,
+                                        child: Center(
+                                          child: Text(
+                                            _cloudPlace.description ?? '',
+                                            style:
+                                                GoogleFonts.actor(fontSize: 20),
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    SizedBox(
-                                      height: 200,
-                                      child: ListView.builder(
-                                        itemCount: contactList.length,
-                                        itemBuilder: (context, index) {
-                                          final url =
-                                              Uri.parse(contactList[index]);
-                                          switch (index) {
-                                            case 0:
-                                              return Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const Icon(
-                                                      CupertinoIcons.globe),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      _launchUrl(url);
-                                                    },
-                                                    child: Text(
-                                                      'Check our site!',
-                                                      style: GoogleFonts.actor(
-                                                        fontSize: 18,
-                                                        decoration:
-                                                            TextDecoration
-                                                                .underline,
+                                      SizedBox(
+                                        height: 200,
+                                        child: ListView.builder(
+                                          itemCount: contactList.length,
+                                          itemBuilder: (context, index) {
+                                            final url =
+                                                Uri.parse(contactList[index]);
+                                            switch (index) {
+                                              case 0:
+                                                return Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const Icon(
+                                                        CupertinoIcons.globe),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        _launchUrl(url);
+                                                      },
+                                                      child: Text(
+                                                        'Check our site!',
+                                                        style:
+                                                            GoogleFonts.actor(
+                                                          fontSize: 18,
+                                                          decoration:
+                                                              TextDecoration
+                                                                  .underline,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              );
-                                            case 1:
-                                              return Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  const Icon(Icons.facebook),
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      _launchUrl(url);
-                                                    },
-                                                    child: Text(
-                                                      'Follow us here!',
-                                                      style: GoogleFonts.actor(
-                                                        fontSize: 18,
-                                                        decoration:
-                                                            TextDecoration
-                                                                .underline,
+                                                  ],
+                                                );
+                                              case 1:
+                                                return Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const Icon(Icons.facebook),
+                                                    TextButton(
+                                                      onPressed: () {
+                                                        _launchUrl(url);
+                                                      },
+                                                      child: Text(
+                                                        'Follow us here!',
+                                                        style:
+                                                            GoogleFonts.actor(
+                                                          fontSize: 18,
+                                                          decoration:
+                                                              TextDecoration
+                                                                  .underline,
+                                                        ),
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
-                                              );
-                                            default:
-                                              return null;
-                                          }
-                                        },
-                                      ),
-                                    )
-                                  ],
+                                                  ],
+                                                );
+                                              default:
+                                                return null;
+                                            }
+                                          },
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
@@ -387,6 +364,268 @@ class _DetailsPlaceViewState extends State<DetailsPlaceView>
 
   @override
   bool get wantKeepAlive => true;
+}
+
+class PlaceDynamicActivities extends StatefulWidget {
+  const PlaceDynamicActivities({
+    super.key,
+    required FirebaseCloudStorage cloudService,
+    required CloudPlace cloudPlace,
+  })  : _cloudService = cloudService,
+        _cloudPlace = cloudPlace;
+
+  final FirebaseCloudStorage _cloudService;
+  final CloudPlace _cloudPlace;
+
+  @override
+  State<PlaceDynamicActivities> createState() => _PlaceDynamicActivitiesState();
+}
+
+class _PlaceDynamicActivitiesState extends State<PlaceDynamicActivities> {
+  var _currentDay = DateTime.now().day;
+
+  void _getDayOfMonth(int day) {
+    setState(() {
+      _currentDay = day;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 50,
+          child: WeeklyListview(callback: _getDayOfMonth),
+        ),
+        Expanded(
+          child: StreamBuilder(
+            stream: widget._cloudService
+                .getActivities(givenPlaceId: widget._cloudPlace.id),
+            builder: (context, snapshot) {
+              switch (snapshot.connectionState) {
+                case ConnectionState.active:
+                  if (snapshot.hasData) {
+                    final activities = snapshot.data as Iterable<CloudActivity>;
+
+                    final activitiesCopy = activities
+                        .where(
+                            (element) => element.timestamp.day == _currentDay)
+                        .toList();
+                    if (activitiesCopy.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.calendar_today_outlined,
+                              size: 80,
+                              color: Colors.grey,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'There are no events proggramed today',
+                                  style: GoogleFonts.actor(
+                                    fontSize: 40,
+                                    color: Colors.grey,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    activitiesCopy
+                        .sort((a, b) => a.timestamp.compareTo(b.timestamp));
+                    return ListView.builder(
+                      itemCount: activitiesCopy.length,
+                      itemBuilder: (context, index) {
+                        final activity = activitiesCopy.elementAt(index);
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: activity.imageUrl,
+                                    imageBuilder: (context, imageProvider) =>
+                                        Container(
+                                      height: 150,
+                                      width: 125,
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        image: DecorationImage(
+                                          image: imageProvider,
+                                          fit: BoxFit.fill,
+                                        ),
+                                      ),
+                                    ),
+                                    placeholder: (context, url) => const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      activity.title,
+                                      style: GoogleFonts.actor(
+                                        fontSize: 20,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const Divider(),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  } else {
+                    return const Placeholder();
+                  }
+
+                default:
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+              }
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class PlaceStaticActivities extends StatelessWidget {
+  const PlaceStaticActivities({
+    super.key,
+    required FirebaseCloudStorage cloudService,
+    required CloudPlace cloudPlace,
+  })  : _cloudService = cloudService,
+        _cloudPlace = cloudPlace;
+
+  final FirebaseCloudStorage _cloudService;
+  final CloudPlace _cloudPlace;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: _cloudService.getActivities(givenPlaceId: _cloudPlace.id),
+      builder: (context, snapshot) {
+        switch (snapshot.connectionState) {
+          case ConnectionState.active:
+            if (snapshot.hasData) {
+              final activities = snapshot.data as Iterable<CloudActivity>;
+
+              if (activities.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 80,
+                        color: Colors.grey,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Upcoming activities to be uploaded..',
+                            style: GoogleFonts.actor(
+                              fontSize: 40,
+                              color: Colors.grey,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return ListView.builder(
+                itemCount: activities.length,
+                itemBuilder: (context, index) {
+                  final activity = activities.elementAt(index);
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: activity.imageUrl,
+                              imageBuilder: (context, imageProvider) =>
+                                  Container(
+                                height: 100,
+                                width: 150,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  image: DecorationImage(
+                                    image: imageProvider,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              placeholder: (context, url) => const Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            Expanded(
+                              child: Text(
+                                activity.title,
+                                style: GoogleFonts.actor(
+                                  fontSize: 20,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Divider(),
+                      ],
+                    ),
+                  );
+                },
+              );
+            } else {
+              return const Placeholder();
+            }
+          default:
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+        }
+      },
+    );
+  }
 }
 
 class _CachedContent extends StatefulWidget {

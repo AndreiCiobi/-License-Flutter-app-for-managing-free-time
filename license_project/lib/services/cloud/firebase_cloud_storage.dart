@@ -96,7 +96,7 @@ class FirebaseCloudStorage {
   }
 
   Stream<Iterable<CloudPlace>> getPlaces({required String givenDomainId}) {
-    return places.snapshots().map((event) => event.docs
+    return places.orderBy(placeName).snapshots().map((event) => event.docs
         .where((element) => element.data()[domainId] == givenDomainId)
         .map((e) => CloudPlace.fromSnapshot(e)));
   }

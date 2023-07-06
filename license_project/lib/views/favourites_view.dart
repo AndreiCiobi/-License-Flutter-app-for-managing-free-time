@@ -89,6 +89,7 @@ class _FavouritesViewState extends State<FavouritesView>
                         builder: (context, snapshot) {
                           switch (snapshot.connectionState) {
                             case ConnectionState.active:
+                              // dev.log('$snapshot.data');
                               final pointsOfInterest = snapshot.data
                                   as Iterable<Iterable<CloudPointOfInterest>>;
 

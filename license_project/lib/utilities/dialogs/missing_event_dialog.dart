@@ -6,14 +6,15 @@ class MissingEventDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Missing Events'),
-      content: Text('There are currently no events available. Check it later!'),
+      title: const Text('Missing Events'),
+      content: const Text(
+          'There are currently no events available. Check it later!'),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('Ok'),
+          child: const Text('OK'),
         ),
       ],
     );
