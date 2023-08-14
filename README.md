@@ -7,4 +7,4 @@ by providing a quick and attractive selection of the most suitable ways to spend
 
 With a wide range of categories available, Your Bucharest showcases points of interest or current events where people can engage in their preferred activities.
 
-![Start Menu](../images/main_menu.jpg)
+![Start Menu](images/main_menu.jpg)
